@@ -11,21 +11,31 @@ app = Flask(__name__)
 
 CORS(app)
 
-# Generate a random filename
-def generate_random_filename(extension='png'):
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10)) + f'.{extension}'
 
-@app.route('/remove-bg', methods=['POST'])
+# Generate a random filename
+def generate_random_filename(extension="png"):
+    return (
+        "".join(random.choices(string.ascii_lowercase + string.digits, k=10))
+        + f".{extension}"
+    )
+
+
+@app.route("/")
+def index():
+    return "Welcome to the Background Removal API!"
+
+
+@app.route("/remove-bg", methods=["POST"])
 def remove_bg():
     # Check if a file is included in the request
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
 
-    file = request.files['file']
+    file = request.files["file"]
 
     # Check if the file has a valid filename
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
 
     try:
         # Open the image using PIL
@@ -39,14 +49,20 @@ def remove_bg():
 
         # Save the output image to a BytesIO stream to avoid saving it on disk
         img_io = io.BytesIO()
-        output_image.save(img_io, format='PNG')
+        output_image.save(img_io, format="PNG")
         img_io.seek(0)
 
         # Send the image file back to the client
-        return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=random_filename)
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return send_file(
+            img_io,
+            mimetype="image/png",
+            as_attachment=True,
+            download_name=random_filename,
+        )
 
-if __name__ == '__main__':
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+if __name__ == "__main__":
     app.run(debug=True)
