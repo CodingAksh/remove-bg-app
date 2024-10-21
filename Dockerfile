@@ -3,18 +3,24 @@ FROM python:3.9-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Install system dependencies for rembg and Pillow
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 libsm6 libxext6 libxrender-dev libpng-dev \
+    && apt-get clean
 
-# Install any needed packages specified in requirements.txt
+# Copy requirements.txt and install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 5000 available to the world outside this container
+# Copy the rest of the application code
+COPY . .
+
+# Expose the port that Flask runs on
 EXPOSE 5000
 
-# Define environment variable
+# Define environment variable for Flask
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
-# Run flask when the container launches
+# Command to run the application
 CMD ["flask", "run"]
